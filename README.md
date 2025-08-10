@@ -39,8 +39,8 @@ Make sure you have the following installed:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/topsecretagent007/Ton-Swap-SmartContract.git
-   cd Ton-Swap-SmartContract
+   git clone https://github.com/topsecretagent007/Jetton-Dex-Ton-Smart-Contract.git
+   cd Jetton-Dex-Ton-Smart-Contract
 
 2. **Install dependencies:**
 
