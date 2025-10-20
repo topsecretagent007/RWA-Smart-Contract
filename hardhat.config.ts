@@ -1,11 +1,13 @@
-require("@nomicfoundation/hardhat-toolbox");
-require("@nomicfoundation/hardhat-verify");
-require("hardhat-gas-reporter");
-require("solidity-coverage");
-require("dotenv").config();
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-verify";
+import "hardhat-gas-reporter";
+import "solidity-coverage";
+import * as dotenv from "dotenv";
 
-/** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
+dotenv.config();
+
+const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.20",
     settings: {
@@ -69,5 +71,11 @@ module.exports = {
   mocha: {
     timeout: 40000,
   },
+  typechain: {
+    outDir: "typechain-types",
+    target: "ethers-v6",
+  },
 };
+
+export default config;
 

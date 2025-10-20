@@ -1,19 +1,20 @@
-const hre = require("hardhat");
+import { ethers } from "hardhat";
+import hre from "hardhat";
 
-async function main() {
+async function main(): Promise<void> {
   console.log("🚀 Starting RWA Dynamic NFT Smart Contract Deployment...\n");
 
   // Get deployer account
-  const [deployer] = await hre.ethers.getSigners();
+  const [deployer] = await ethers.getSigners();
   console.log("📍 Deploying contracts with account:", deployer.address);
   
-  const balance = await hre.ethers.provider.getBalance(deployer.address);
-  console.log("💰 Account balance:", hre.ethers.formatEther(balance), "ETH\n");
+  const balance = await ethers.provider.getBalance(deployer.address);
+  console.log("💰 Account balance:", ethers.formatEther(balance), "ETH\n");
 
   // Deploy RWADynamicNFT Contract
   console.log("📄 Deploying RWADynamicNFT Contract (with Dynamic NFT features)...");
-  const RWADynamicNFT = await hre.ethers.getContractFactory("RWADynamicNFT");
-  const rwaNFT = await RWADynamicNFT.deploy(
+  const RWADynamicNFTFactory = await ethers.getContractFactory("RWADynamicNFT");
+  const rwaNFT = await RWADynamicNFTFactory.deploy(
     "Real World Asset Dynamic NFT",  // Name
     "RWAD"                           // Symbol
   );
@@ -24,8 +25,8 @@ async function main() {
 
   // Deploy RWAMarketplace Contract
   console.log("\n📄 Deploying RWAMarketplace Contract...");
-  const RWAMarketplace = await hre.ethers.getContractFactory("RWAMarketplace");
-  const marketplace = await RWAMarketplace.deploy(
+  const RWAMarketplaceFactory = await ethers.getContractFactory("RWAMarketplace");
+  const marketplace = await RWAMarketplaceFactory.deploy(
     deployer.address  // Fee receiver
   );
   
@@ -35,8 +36,11 @@ async function main() {
 
   // Wait for block confirmations
   console.log("\n⏳ Waiting for block confirmations...");
-  await rwaNFT.deploymentTransaction().wait(5);
-  await marketplace.deploymentTransaction().wait(5);
+  const rwaTx = rwaNFT.deploymentTransaction();
+  const marketplaceTx = marketplace.deploymentTransaction();
+  
+  if (rwaTx) await rwaTx.wait(5);
+  if (marketplaceTx) await marketplaceTx.wait(5);
 
   console.log("\n" + "=".repeat(70));
   console.log("🎉 DEPLOYMENT SUCCESSFUL - DYNAMIC NFT SYSTEM READY!");
@@ -67,7 +71,7 @@ async function main() {
         constructorArguments: ["Real World Asset Dynamic NFT", "RWAD"],
       });
       console.log("✅ RWADynamicNFT verified on Etherscan");
-    } catch (error) {
+    } catch (error: any) {
       console.log("⚠️  RWADynamicNFT verification failed:", error.message);
     }
 
@@ -77,7 +81,7 @@ async function main() {
         constructorArguments: [deployer.address],
       });
       console.log("✅ RWAMarketplace verified on Etherscan");
-    } catch (error) {
+    } catch (error: any) {
       console.log("⚠️  RWAMarketplace verification failed:", error.message);
     }
   }
@@ -95,7 +99,8 @@ async function main() {
 
 main()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch((error: Error) => {
     console.error(error);
     process.exit(1);
   });
+

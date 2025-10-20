@@ -1,6 +1,20 @@
-const hre = require("hardhat");
+import { ethers } from "hardhat";
+import * as fs from "fs";
 
-async function main() {
+enum AssetCondition {
+  EXCELLENT = 0,
+  GOOD = 1,
+  FAIR = 2,
+  POOR = 3,
+  CRITICAL = 4
+}
+
+function getConditionName(condition: number): string {
+  const conditions = ["Excellent", "Good", "Fair", "Poor", "Critical"];
+  return conditions[condition] || "Unknown";
+}
+
+async function main(): Promise<void> {
   console.log("🔗 Interacting with RWA Dynamic NFT Contracts...\n");
 
   // Contract addresses (update these with your deployed addresses)
@@ -8,15 +22,15 @@ async function main() {
   const MARKETPLACE_ADDRESS = process.env.MARKETPLACE_ADDRESS || "YOUR_MARKETPLACE_ADDRESS";
 
   // Get signer
-  const [signer] = await hre.ethers.getSigners();
+  const [signer] = await ethers.getSigners();
   console.log("📍 Using account:", signer.address);
 
   // Get contract instances
-  const RWADynamicNFT = await hre.ethers.getContractFactory("RWADynamicNFT");
-  const rwaNFT = RWADynamicNFT.attach(RWA_NFT_ADDRESS);
+  const RWADynamicNFTFactory = await ethers.getContractFactory("RWADynamicNFT");
+  const rwaNFT = RWADynamicNFTFactory.attach(RWA_NFT_ADDRESS);
 
-  const RWAMarketplace = await hre.ethers.getContractFactory("RWAMarketplace");
-  const marketplace = RWAMarketplace.attach(MARKETPLACE_ADDRESS);
+  const RWAMarketplaceFactory = await ethers.getContractFactory("RWAMarketplace");
+  const marketplace = RWAMarketplaceFactory.attach(MARKETPLACE_ADDRESS);
 
   console.log("\n📄 RWADynamicNFT Address:", await rwaNFT.getAddress());
   console.log("📄 Marketplace Address:", await marketplace.getAddress());
@@ -37,9 +51,8 @@ async function main() {
     );
 
     const receipt = await mintTx.wait();
-    console.log("✅ NFT Minted! Transaction hash:", receipt.hash);
+    console.log("✅ NFT Minted! Transaction hash:", receipt?.hash);
 
-    // Get the token ID (assume it's 0 if first mint)
     const tokenId = 0;
     
     // Get asset data
@@ -48,11 +61,11 @@ async function main() {
     console.log("   Asset Type:", asset.assetType);
     console.log("   Location:", asset.location);
     console.log("   Valuation: $" + (Number(asset.valuationUSD) / 100).toFixed(2));
-    console.log("   Condition:", getConditionName(asset.condition));
+    console.log("   Condition:", getConditionName(Number(asset.condition)));
     console.log("   Verified:", asset.isVerified);
     console.log("   Update Count:", asset.updateCount.toString());
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error:", error.message);
   }
 
@@ -73,8 +86,9 @@ async function main() {
     // Check price history
     const history = await rwaNFT.getPriceHistory(tokenId);
     console.log("\n📈 Price History:");
-    history.forEach((entry, index) => {
-      console.log(`   ${index + 1}. $${(Number(entry.price) / 100).toFixed(2)} at ${new Date(Number(entry.timestamp) * 1000).toLocaleString()}`);
+    history.forEach((entry: any, index: number) => {
+      const date = new Date(Number(entry.timestamp) * 1000).toLocaleString();
+      console.log(`   ${index + 1}. $${(Number(entry.price) / 100).toFixed(2)} at ${date}`);
     });
 
     // Check price appreciation
@@ -82,7 +96,7 @@ async function main() {
     const appreciationPercent = (Number(appreciation) / 100).toFixed(2);
     console.log(`\n📊 Price Appreciation: ${appreciationPercent}%`);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error:", error.message);
   }
 
@@ -93,7 +107,7 @@ async function main() {
 
   try {
     const tokenId = 0;
-    const newCondition = 1; // GOOD
+    const newCondition = AssetCondition.GOOD;
 
     const conditionTx = await rwaNFT.updateCondition(tokenId, newCondition);
     await conditionTx.wait();
@@ -103,7 +117,7 @@ async function main() {
     const asset = await rwaNFT.assetData(tokenId);
     console.log("   Current Update Count:", asset.updateCount.toString());
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error:", error.message);
   }
 
@@ -120,12 +134,11 @@ async function main() {
     console.log("   SVG Length:", svg.length, "characters");
     console.log("   Preview (first 200 chars):", svg.substring(0, 200) + "...");
     
-    // Save SVG to file (optional)
-    const fs = require('fs');
+    // Save SVG to file
     fs.writeFileSync('dynamic-nft.svg', svg);
     console.log("   💾 Saved to dynamic-nft.svg");
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error:", error.message);
   }
 
@@ -142,7 +155,7 @@ async function main() {
     console.log("   URI Length:", uri.length, "characters");
     console.log("   Type: Base64 encoded JSON with embedded SVG");
     
-    // Decode and display metadata (if you want to see it)
+    // Decode and display metadata
     if (uri.startsWith('data:application/json;base64,')) {
       const base64Data = uri.replace('data:application/json;base64,', '');
       const decoded = Buffer.from(base64Data, 'base64').toString();
@@ -150,7 +163,7 @@ async function main() {
       console.log("   " + decoded.substring(0, 300) + "...");
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error:", error.message);
   }
 
@@ -167,11 +180,11 @@ async function main() {
     
     const images = await rwaNFT.getAssetImages(tokenId);
     console.log("✅ Asset now has", images.length, "images:");
-    images.forEach((img, idx) => {
+    images.forEach((img: string, idx: number) => {
       console.log(`   ${idx + 1}. ${img}`);
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error:", error.message);
   }
 
@@ -188,11 +201,10 @@ async function main() {
     
     console.log("✅ Asset verified!");
     
-    // Check updated asset data
     const asset = await rwaNFT.assetData(tokenId);
     console.log("   Verified:", asset.isVerified);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error:", error.message);
   }
 
@@ -203,24 +215,22 @@ async function main() {
 
   try {
     const tokenId = 0;
-    const price = hre.ethers.parseEther("10"); // 10 ETH
+    const price = ethers.parseEther("10");
 
-    // Approve marketplace
     const approveTx = await rwaNFT.approve(await marketplace.getAddress(), tokenId);
     await approveTx.wait();
     console.log("✅ Marketplace approved for token #" + tokenId);
 
-    // List NFT
     const listTx = await marketplace.listNFT(
       await rwaNFT.getAddress(),
       tokenId,
       price
     );
     const listReceipt = await listTx.wait();
-    console.log("✅ NFT listed for sale at", hre.ethers.formatEther(price), "ETH");
-    console.log("   Transaction hash:", listReceipt.hash);
+    console.log("✅ NFT listed for sale at", ethers.formatEther(price), "ETH");
+    console.log("   Transaction hash:", listReceipt?.hash);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error:", error.message);
   }
 
@@ -238,14 +248,10 @@ async function main() {
   console.log("   ✓ Marketplace integration\n");
 }
 
-function getConditionName(condition) {
-  const conditions = ["Excellent", "Good", "Fair", "Poor", "Critical"];
-  return conditions[condition] || "Unknown";
-}
-
 main()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch((error: Error) => {
     console.error(error);
     process.exit(1);
   });
+

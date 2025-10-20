@@ -1,24 +1,30 @@
 {
-  "name": "rwa-nft-smart-contract",
-  "version": "1.0.0",
-  "description": "Real World Assets NFT Smart Contract on Ethereum",
+  "name": "rwa-dynamic-nft-smart-contract",
+  "version": "2.0.0",
+  "description": "Real World Assets Dynamic NFT Smart Contract on Ethereum (TypeScript)",
   "main": "index.js",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy": "hardhat run scripts/deploy.js",
-    "deploy:testnet": "hardhat run scripts/deploy.js --network sepolia",
+    "deploy": "hardhat run scripts/deploy.ts",
+    "deploy:testnet": "hardhat run scripts/deploy.ts --network sepolia",
+    "interact": "hardhat run scripts/interact.ts",
     "verify": "hardhat verify",
     "node": "hardhat node",
-    "clean": "hardhat clean"
+    "clean": "hardhat clean",
+    "typechain": "hardhat typechain",
+    "coverage": "hardhat coverage"
   },
   "keywords": [
     "RWA",
-    "NFT",
+    "Dynamic NFT",
+    "dNFT",
     "Smart Contract",
     "Solidity",
+    "TypeScript",
     "ERC-721",
-    "Real World Assets"
+    "Real World Assets",
+    "Ethereum"
   ],
   "author": "topsecretagent_007",
   "license": "MIT",
@@ -28,9 +34,6 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.2.3",
-    "@nomiclabs/hardhat-etherscan": "^3.1.8",
-    "@openzeppelin/hardhat-upgrades": "^3.0.0",
     "@typechain/ethers-v6": "^0.5.0",
     "@typechain/hardhat": "^9.0.0",
     "@types/chai": "^4.3.11",

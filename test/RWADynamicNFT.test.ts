@@ -1,13 +1,27 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
-const { loadFixture, time } = require("@nomicfoundation/hardhat-network-helpers");
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { RWADynamicNFT } from "../typechain-types";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("RWADynamicNFT Contract", function () {
-  async function deployDynamicNFTFixture() {
+  interface Fixture {
+    nft: RWADynamicNFT;
+    owner: SignerWithAddress;
+    addr1: SignerWithAddress;
+    addr2: SignerWithAddress;
+    verifier: SignerWithAddress;
+    updater: SignerWithAddress;
+    MINTER_ROLE: string;
+    VERIFIER_ROLE: string;
+    UPDATER_ROLE: string;
+  }
+
+  async function deployDynamicNFTFixture(): Promise<Fixture> {
     const [owner, addr1, addr2, verifier, updater] = await ethers.getSigners();
 
-    const RWADynamicNFT = await ethers.getContractFactory("RWADynamicNFT");
-    const nft = await RWADynamicNFT.deploy("Real World Asset Dynamic NFT", "RWAD");
+    const RWADynamicNFTFactory = await ethers.getContractFactory("RWADynamicNFT");
+    const nft = await RWADynamicNFTFactory.deploy("Real World Asset Dynamic NFT", "RWAD");
 
     // Grant roles
     const MINTER_ROLE = await nft.MINTER_ROLE();
@@ -125,7 +139,7 @@ describe("RWADynamicNFT Contract", function () {
       await expect(
         nft.connect(updater).updateCondition(0, 2) // FAIR
       ).to.emit(nft, "ConditionChanged")
-        .withArgs(0, 0, 2); // From EXCELLENT to FAIR
+        .withArgs(0, 0, 2);
 
       const asset = await nft.assetData(0);
       expect(asset.condition).to.equal(2);
@@ -138,8 +152,8 @@ describe("RWADynamicNFT Contract", function () {
 
       await nft.connect(updater).updateAssetData(
         0,
-        200000,  // new valuation
-        3,       // POOR condition
+        200000,
+        3,
         "ipfs://newdocs"
       );
 
@@ -249,7 +263,6 @@ describe("RWADynamicNFT Contract", function () {
       
       const uriAfterUpdate = await nft.tokenURI(0);
       
-      // URI should change because metadata is dynamic
       expect(uriBeforeUpdate).to.not.equal(uriAfterUpdate);
     });
   });
@@ -260,11 +273,9 @@ describe("RWADynamicNFT Contract", function () {
 
       await nft.mintAsset(addr1.address, "Real Estate", "NYC", 100000, "ipfs://docs", "ipfs://img");
 
-      // Initial price is 100000, update to 150000 (50% increase)
       await nft.connect(updater).updateValuation(0, 150000);
 
       const appreciation = await nft.getPriceAppreciation(0);
-      // 50% increase = 5000 basis points
       expect(appreciation).to.equal(5000);
     });
 
@@ -273,11 +284,9 @@ describe("RWADynamicNFT Contract", function () {
 
       await nft.mintAsset(addr1.address, "Vehicle", "LA", 200000, "ipfs://docs", "ipfs://img");
 
-      // Price drops from 200000 to 150000 (-25%)
       await nft.connect(updater).updateValuation(0, 150000);
 
       const appreciation = await nft.getPriceAppreciation(0);
-      // -25% = -2500 basis points
       expect(appreciation).to.equal(-2500);
     });
 
@@ -291,7 +300,7 @@ describe("RWADynamicNFT Contract", function () {
       await nft.connect(updater).updateValuation(0, 140000);
 
       const history = await nft.getPriceHistory(0);
-      expect(history.length).to.equal(4); // Initial + 3 updates
+      expect(history.length).to.equal(4);
       expect(history[0].price).to.equal(100000);
       expect(history[1].price).to.equal(120000);
       expect(history[2].price).to.equal(150000);
@@ -335,14 +344,13 @@ describe("RWADynamicNFT Contract", function () {
       const [receiver, amount] = await nft.royaltyInfo(0, salePrice);
 
       expect(receiver).to.equal(await nft.royaltyReceiver());
-      // 2.5% of 1 ETH = 0.025 ETH
       expect(amount).to.equal(salePrice * BigInt(250) / BigInt(10000));
     });
 
     it("Should update royalty info", async function () {
-      const { nft, owner, addr1 } = await loadFixture(deployDynamicNFTFixture);
+      const { nft, addr1 } = await loadFixture(deployDynamicNFTFixture);
 
-      await nft.setRoyaltyInfo(addr1.address, 500); // 5%
+      await nft.setRoyaltyInfo(addr1.address, 500);
 
       expect(await nft.royaltyReceiver()).to.equal(addr1.address);
       expect(await nft.royaltyBasisPoints()).to.equal(500);

@@ -1,27 +1,38 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
-const { loadFixture, time } = require("@nomicfoundation/hardhat-network-helpers");
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { RWADynamicNFT, RWAMarketplace } from "../typechain-types";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("RWAMarketplace Contract", function () {
-  async function deployMarketplaceFixture() {
+  interface MarketplaceFixture {
+    nft: RWADynamicNFT;
+    marketplace: RWAMarketplace;
+    owner: SignerWithAddress;
+    seller: SignerWithAddress;
+    buyer: SignerWithAddress;
+    feeReceiver: SignerWithAddress;
+  }
+
+  async function deployMarketplaceFixture(): Promise<MarketplaceFixture> {
     const [owner, seller, buyer, feeReceiver] = await ethers.getSigners();
 
     // Deploy NFT contract
-    const RWANFT = await ethers.getContractFactory("RWANFT");
-    const nft = await RWANFT.deploy("Real World Asset NFT", "RWA");
+    const RWADynamicNFTFactory = await ethers.getContractFactory("RWADynamicNFT");
+    const nft = await RWADynamicNFTFactory.deploy("Real World Asset Dynamic NFT", "RWAD");
 
     // Deploy Marketplace
-    const RWAMarketplace = await ethers.getContractFactory("RWAMarketplace");
-    const marketplace = await RWAMarketplace.deploy(feeReceiver.address);
+    const RWAMarketplaceFactory = await ethers.getContractFactory("RWAMarketplace");
+    const marketplace = await RWAMarketplaceFactory.deploy(feeReceiver.address);
 
     // Mint NFT to seller
     await nft.mintAsset(
       seller.address,
-      "ipfs://test",
       "Real Estate",
       "NYC",
       100000,
-      "ipfs://docs"
+      "ipfs://docs",
+      "ipfs://img"
     );
 
     return { nft, marketplace, owner, seller, buyer, feeReceiver };
@@ -35,7 +46,7 @@ describe("RWAMarketplace Contract", function () {
 
     it("Should set default platform fee", async function () {
       const { marketplace } = await loadFixture(deployMarketplaceFixture);
-      expect(await marketplace.platformFeeBasisPoints()).to.equal(250); // 2.5%
+      expect(await marketplace.platformFeeBasisPoints()).to.equal(250);
     });
   });
 
@@ -43,7 +54,6 @@ describe("RWAMarketplace Contract", function () {
     it("Should list an NFT for sale", async function () {
       const { nft, marketplace, seller } = await loadFixture(deployMarketplaceFixture);
 
-      // Approve marketplace
       await nft.connect(seller).approve(await marketplace.getAddress(), 0);
 
       const price = ethers.parseEther("1");
@@ -131,7 +141,6 @@ describe("RWAMarketplace Contract", function () {
       const sellerBalanceAfter = await ethers.provider.getBalance(seller.address);
       const feeReceiverBalanceAfter = await ethers.provider.getBalance(feeReceiver.address);
 
-      // Platform fee is 2.5%
       const platformFee = (price * BigInt(250)) / BigInt(10000);
       const sellerProceeds = price - platformFee;
 
@@ -191,7 +200,7 @@ describe("RWAMarketplace Contract", function () {
 
       await nft.connect(seller).approve(await marketplace.getAddress(), 0);
       const startingPrice = ethers.parseEther("1");
-      const duration = 86400; // 1 day
+      const duration = 86400;
 
       await expect(
         marketplace.connect(seller).createAuction(
@@ -246,19 +255,16 @@ describe("RWAMarketplace Contract", function () {
         duration
       );
 
-      // First bid
       const firstBid = ethers.parseEther("1.5");
       await marketplace.connect(buyer).placeBid(0, { value: firstBid });
 
       const buyerBalanceBefore = await ethers.provider.getBalance(buyer.address);
 
-      // Second bid (should refund first bidder)
       const secondBid = ethers.parseEther("2");
       await marketplace.connect(owner).placeBid(0, { value: secondBid });
 
       const buyerBalanceAfter = await ethers.provider.getBalance(buyer.address);
 
-      // Buyer should have been refunded
       expect(buyerBalanceAfter - buyerBalanceBefore).to.equal(firstBid);
     });
 
@@ -267,7 +273,7 @@ describe("RWAMarketplace Contract", function () {
 
       await nft.connect(seller).approve(await marketplace.getAddress(), 0);
       const startingPrice = ethers.parseEther("1");
-      const duration = 3600; // 1 hour
+      const duration = 3600;
 
       await marketplace.connect(seller).createAuction(
         await nft.getAddress(),
@@ -279,7 +285,6 @@ describe("RWAMarketplace Contract", function () {
       const bidAmount = ethers.parseEther("1.5");
       await marketplace.connect(buyer).placeBid(0, { value: bidAmount });
 
-      // Fast forward time
       await time.increase(3601);
 
       await expect(
@@ -303,7 +308,6 @@ describe("RWAMarketplace Contract", function () {
         duration
       );
 
-      // Fast forward time
       await time.increase(3601);
 
       await expect(
@@ -314,9 +318,9 @@ describe("RWAMarketplace Contract", function () {
 
   describe("Admin Functions", function () {
     it("Should update platform fee", async function () {
-      const { marketplace, owner } = await loadFixture(deployMarketplaceFixture);
+      const { marketplace } = await loadFixture(deployMarketplaceFixture);
 
-      const newFee = 500; // 5%
+      const newFee = 500;
       await expect(
         marketplace.setPlatformFee(newFee)
       ).to.emit(marketplace, "PlatformFeeUpdated");
@@ -333,7 +337,7 @@ describe("RWAMarketplace Contract", function () {
     });
 
     it("Should update fee receiver", async function () {
-      const { marketplace, owner, buyer } = await loadFixture(deployMarketplaceFixture);
+      const { marketplace, buyer } = await loadFixture(deployMarketplaceFixture);
 
       await marketplace.setFeeReceiver(buyer.address);
       expect(await marketplace.feeReceiver()).to.equal(buyer.address);
