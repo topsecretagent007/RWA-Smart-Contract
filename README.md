@@ -1,93 +1,416 @@
-# 🌐 Ton Swap SmartContract
+# 🏢 Real World Asset (RWA) NFT Smart Contract
 
-Welcome to the **Ton Swap SmartContract** repository! This project is the backbone of a decentralized exchange (DEX) on the TON blockchain, enabling secure and efficient token swaps, liquidity provision, and DeFi operations. If you're interested in leveraging the power of the TON blockchain for decentralized trading, you've come to the right place.
+> **Tokenizing Real-World Assets on the Blockchain**
+
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.20-blue.svg)](https://soliditylang.org/)
+[![Hardhat](https://img.shields.io/badge/Built%20with-Hardhat-yellow.svg)](https://hardhat.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ## 📜 Overview
 
-Ton Swap SmartContract is a robust set of smart contracts designed for swapping tokens and managing liquidity pools within the TON ecosystem. Built for speed, security, and scalability, these contracts empower users with a seamless trading experience while maintaining full decentralization.
+The **RWA NFT Smart Contract** is a comprehensive Solidity-based solution for tokenizing real-world assets as NFTs on Ethereum and EVM-compatible blockchains. This project enables the representation of physical assets like real estate, art, vehicles, and more as digital tokens with full on-chain verification and marketplace functionality.
 
-## 🚀 Key Features
+### 🌟 Key Features
 
-- **Token Swapping**: Facilitates the exchange of TON-based tokens in a fully decentralized manner.
-- **Liquidity Pools**: Users can provide liquidity to pools, earn rewards, and contribute to the stability of the ecosystem.
-- **Non-Custodial**: Users retain full control over their assets—no intermediaries, no centralized risk.
-- **Efficient Transactions**: Built on the TON blockchain, enabling high-speed, low-fee transactions.
-- **Modular and Extensible**: Designed with scalability in mind, making it easy to extend and integrate additional features.
+- **🎨 ERC-721 Standard**: Full compliance with ERC-721 NFT standard
+- **✅ Asset Verification**: Built-in verification system for real-world assets
+- **📊 Metadata Management**: Comprehensive metadata storage including valuation, location, and legal documents
+- **🔐 Access Control**: Role-based permissions (Minter, Verifier, Admin)
+- **💰 Royalty Support**: EIP-2981 compliant royalty system
+- **🏪 Marketplace**: Integrated marketplace for listing, buying, and auctioning NFTs
+- **⏱️ Auction System**: Time-based auctions with automatic bid refunds
+- **🛡️ Security**: ReentrancyGuard, Pausable, and battle-tested OpenZeppelin contracts
+- **📦 Batch Operations**: Efficient batch minting capabilities
 
-## 🛠️ Project Structure
+## 🏗️ Architecture
 
-Here’s a brief overview of the structure of this repository:
+### Core Contracts
 
-- **`contracts/`**: Contains the smart contracts written for token swaps, liquidity pools, and other DEX functionalities.
-- **`scripts/`**: Includes deployment and management scripts to interact with the contracts.
-- **`test/`**: Unit tests to ensure the reliability and security of the smart contracts.
+1. **RWANFT.sol** - Main NFT contract
+   - ERC-721 implementation for tokenizing real-world assets
+   - Role-based access control (Minter, Verifier, Pauser)
+   - Asset metadata and verification tracking
+   - Royalty system
+   - Pausable for emergency stops
 
-## 📖 Getting Started
+2. **RWAMarketplace.sol** - Marketplace contract
+   - NFT listing and buying
+   - Auction creation and bidding
+   - Platform fee management
+   - Secure payment handling
 
-Follow these instructions to get a local copy up and running for development, testing, and deployment.
+## 📋 Smart Contract Details
+
+### RWANFT Contract
+
+#### Asset Metadata Structure
+```solidity
+struct AssetMetadata {
+    string assetType;           // e.g., "Real Estate", "Art", "Vehicle"
+    string location;            // Physical location
+    uint256 valuationUSD;       // Valuation in USD cents
+    uint256 mintTimestamp;      // Minting time
+    uint256 lastVerifiedDate;   // Last verification timestamp
+    bool isVerified;            // Verification status
+    string documentHash;        // IPFS hash of legal documents
+}
+```
+
+#### Key Functions
+
+**Minting**
+```solidity
+function mintAsset(
+    address to,
+    string memory uri,
+    string memory assetType,
+    string memory location,
+    uint256 valuationUSD,
+    string memory documentHash
+) public onlyRole(MINTER_ROLE) returns (uint256)
+```
+
+**Verification**
+```solidity
+function verifyAsset(uint256 tokenId) public onlyRole(VERIFIER_ROLE)
+```
+
+**Batch Minting**
+```solidity
+function batchMintAssets(...) public onlyRole(MINTER_ROLE) returns (uint256[] memory)
+```
+
+### RWAMarketplace Contract
+
+#### Listing Structure
+```solidity
+struct Listing {
+    uint256 listingId;
+    address nftContract;
+    uint256 tokenId;
+    address seller;
+    uint256 price;
+    bool isActive;
+    uint256 listedAt;
+}
+```
+
+#### Key Functions
+
+**List NFT**
+```solidity
+function listNFT(
+    address nftContract,
+    uint256 tokenId,
+    uint256 price
+) public returns (uint256)
+```
+
+**Buy NFT**
+```solidity
+function buyNFT(uint256 listingId) public payable
+```
+
+**Create Auction**
+```solidity
+function createAuction(
+    address nftContract,
+    uint256 tokenId,
+    uint256 startingPrice,
+    uint256 duration
+) public returns (uint256)
+```
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-Make sure you have the following installed:
-
-- [TON Compiler](https://ton.org/docs/#/howto/smart-contracts) for compiling the smart contracts.
-- Node.js and npm/yarn for running scripts and testing.
-- [TON Wallet](https://ton.org/wallets) for interacting with the contracts on the blockchain.
+- Node.js v16+ and npm/yarn
+- Git
 
 ### Installation
 
-1. **Clone the repository:**
+1. **Clone the repository**
+```bash
+git clone https://github.com/yourusername/RWA-Smart-Contract.git
+cd RWA-Smart-Contract
+```
 
-   ```bash
-   git clone https://github.com/topsecretagent007/Jetton-Dex-Ton-Smart-Contract.git
-   cd Jetton-Dex-Ton-Smart-Contract
+2. **Install dependencies**
+```bash
+npm install
+# or
+yarn install
+```
 
-2. **Install dependencies:**
+3. **Set up environment variables**
+```bash
+cp .env.example .env
+# Edit .env with your values
+```
 
-   ```bash
-   npm install
+### Configuration
 
-3. **Compile the smart contracts:**
+Edit `.env` file with your settings:
 
-   ```bash
-   # Example command, adjust based on your setup
-   npx ton-compiler contracts/*.sol
+```env
+# Network RPC URLs
+SEPOLIA_RPC_URL=https://rpc.sepolia.org
+MAINNET_RPC_URL=https://eth.llamarpc.com
 
-4. **Run tests:**
+# Private Key (Never share!)
+PRIVATE_KEY=your_private_key_here
 
-   ```bash
-   npm test
+# API Keys
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
 
- ### Deployment
-   You can deploy the contracts to the TON blockchain using the provided scripts:
+## 🔨 Usage
 
-   ```bash
-   # Example command, adjust based on your deployment strategy
-   npx ton-deploy scripts/deploy.js
-   ```
+### Compile Contracts
+
+```bash
+npm run compile
+```
+
+### Run Tests
+
+```bash
+npm run test
+```
+
+### Deploy Contracts
+
+**Local Network:**
+```bash
+# Start local node
+npm run node
+
+# In another terminal, deploy
+npm run deploy
+```
+
+**Testnet (Sepolia):**
+```bash
+npm run deploy:testnet
+```
+
+### Interact with Contracts
+
+Use the interaction script:
+```bash
+node scripts/interact.js
+```
+
+## 📝 Example Usage
+
+### Minting an RWA NFT
+
+```javascript
+const RWANFT = await ethers.getContractFactory("RWANFT");
+const rwaNFT = await RWANFT.attach(RWA_NFT_ADDRESS);
+
+await rwaNFT.mintAsset(
+    ownerAddress,
+    "ipfs://QmYourMetadataHash",
+    "Real Estate",
+    "123 Main St, New York, NY",
+    50000000, // $500,000.00 in cents
+    "ipfs://QmYourDocumentHash"
+);
+```
+
+### Listing on Marketplace
+
+```javascript
+const marketplace = await ethers.getContractAt("RWAMarketplace", MARKETPLACE_ADDRESS);
+
+// Approve marketplace
+await rwaNFT.approve(MARKETPLACE_ADDRESS, tokenId);
+
+// List NFT
+const listingId = await marketplace.listNFT(
+    RWA_NFT_ADDRESS,
+    tokenId,
+    ethers.parseEther("10") // 10 ETH
+);
+```
+
+### Buying an NFT
+
+```javascript
+await marketplace.buyNFT(listingId, {
+    value: ethers.parseEther("10")
+});
+```
+
+## 🧪 Testing
+
+The project includes comprehensive test suites:
+
+- **RWANFT.test.js** - Tests for NFT contract
+  - Deployment
+  - Minting (single and batch)
+  - Verification
+  - Royalty system
+  - Token management
+  - Pause functionality
+
+- **RWAMarketplace.test.js** - Tests for marketplace
+  - NFT listing and buying
+  - Auction creation and bidding
+  - Payment distribution
+  - Admin functions
+
+Run tests with coverage:
+```bash
+npm run test
+npx hardhat coverage
+```
+
+## 📊 Gas Usage
+
+Approximate gas costs (can vary based on network conditions):
+
+| Function | Gas Cost |
+|----------|----------|
+| Mint Asset | ~250,000 |
+| Batch Mint (3 assets) | ~650,000 |
+| Verify Asset | ~50,000 |
+| List NFT | ~120,000 |
+| Buy NFT | ~180,000 |
+| Create Auction | ~140,000 |
+| Place Bid | ~100,000 |
+
+## 🔒 Security Features
+
+- ✅ **ReentrancyGuard**: Protection against reentrancy attacks
+- ✅ **Access Control**: Role-based permissions
+- ✅ **Pausable**: Emergency stop mechanism
+- ✅ **SafeERC721**: Safe transfer mechanisms
+- ✅ **OpenZeppelin**: Battle-tested contract libraries
+- ✅ **Input Validation**: Comprehensive checks on all inputs
+
+## 🌐 Supported Networks
+
+- Ethereum Mainnet
+- Ethereum Sepolia (Testnet)
+- Polygon
+- Binance Smart Chain
+- Any EVM-compatible chain
+
+## 📖 Documentation
+
+### Roles
+
+- **DEFAULT_ADMIN_ROLE**: Full contract control
+- **MINTER_ROLE**: Can mint new RWA NFTs
+- **VERIFIER_ROLE**: Can verify assets and update metadata
+- **PAUSER_ROLE**: Can pause/unpause contract
+
+### Events
+
+**RWANFT Events:**
+- `AssetMinted(uint256 tokenId, address owner, string assetType, uint256 valuationUSD)`
+- `AssetVerified(uint256 tokenId, address verifier, uint256 timestamp)`
+- `AssetMetadataUpdated(uint256 tokenId, uint256 newValuation, string documentHash)`
+- `RoyaltyUpdated(address newReceiver, uint96 newBasisPoints)`
+
+**Marketplace Events:**
+- `NFTListed(uint256 listingId, address nftContract, uint256 tokenId, address seller, uint256 price)`
+- `NFTSold(...)`
+- `AuctionCreated(...)`
+- `BidPlaced(...)`
+- `AuctionEnded(...)`
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+RWA-Smart-Contract/
+├── contracts/              # Smart contracts
+│   ├── RWANFT.sol
+│   └── RWAMarketplace.sol
+├── scripts/               # Deployment scripts
+│   ├── deploy.js
+│   └── interact.js
+├── test/                  # Test files
+│   ├── RWANFT.test.js
+│   └── RWAMarketplace.test.js
+├── hardhat.config.js      # Hardhat configuration
+├── package.json
+└── README.md
+```
+
+### Adding New Features
+
+1. Write tests first (TDD approach)
+2. Implement the feature
+3. Run tests: `npm test`
+4. Check gas usage: `REPORT_GAS=true npm test`
+5. Deploy to testnet
+6. Verify and test on testnet
 
 ## 🤝 Contributing
-Contributions are welcome! If you have any improvements, bug fixes, or new features, feel free to submit a pull request. Please ensure your changes are well-documented and tested.
 
-### How to Contribute
+Contributions are welcome! Please follow these steps:
 
-1. Fork the project.
-2. Create your feature branch: `git checkout -b feature/YourFeature`.
-3. Commit your changes: `git commit -m 'Add YourFeature'`.
-4. Push to the branch: `git push origin feature/YourFeature`.
-5. Open a pull request.
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/AmazingFeature`
+3. Commit your changes: `git commit -m 'Add some AmazingFeature'`
+4. Push to the branch: `git push origin feature/AmazingFeature`
+5. Open a Pull Request
 
-## 🛡️ Security
+### Contribution Guidelines
 
-Please report any security concerns by opening an issue or reaching out privately.
+- Write comprehensive tests
+- Follow Solidity style guide
+- Add documentation for new features
+- Ensure all tests pass
+- Update README if needed
 
-## 📜 License
+## 🐛 Known Issues & Limitations
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+- Maximum batch mint size is limited to 50 to prevent gas issues
+- Auction minimum duration is 1 hour
+- Platform fees capped at 10%
 
-Thank you for exploring the Ton Swap SmartContract!  
-If you are interested in developing the project, please contact me.  
-Telegram: @topsecretagent_007, <br />
+## 🗺️ Roadmap
 
-I am excited to see what you build with it. 🚀
+- [ ] Implement fractional ownership
+- [ ] Add governance token
+- [ ] Cross-chain bridge support
+- [ ] Advanced rental/leasing mechanisms
+- [ ] Integration with real estate APIs
+- [ ] Mobile app integration
+- [ ] DAO for community governance
 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [OpenZeppelin](https://openzeppelin.com/) for secure contract libraries
+- [Hardhat](https://hardhat.org/) for development environment
+- The Ethereum community
+
+## 📞 Contact
+
+**Developer:** topsecretagent_007
+
+- 📱 Telegram: [@topsecretagent_007](https://t.me/topsecretagent_007)
+- 🐙 GitHub: [topsecretagent007](https://github.com/topsecretagent007)
+
+---
+
+## 🚨 Disclaimer
+
+This smart contract is provided as-is. While we've implemented security best practices, please conduct your own security audit before deploying to mainnet. Real-world asset tokenization may have legal implications in your jurisdiction. Consult with legal professionals before use.
+
+---
+
+**Built with ❤️ for the future of Real World Asset tokenization**
+
+If you find this project useful, please ⭐ star the repository!

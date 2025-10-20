@@ -1,2 +1,14 @@
-*.html linguist-vendored
+# Auto detect text files and perform LF normalization
+* text=auto
 
+# Solidity
+*.sol linguist-language=Solidity
+
+# JavaScript
+*.js linguist-language=JavaScript
+
+# Markdown
+*.md linguist-language=Markdown
+
+# JSON
+*.json linguist-language=JSON
