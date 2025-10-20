@@ -132,7 +132,7 @@ function createAuction(
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/RWA-Smart-Contract.git
+git clone https://github.com/topsecretagent007/RWA-Smart-Contract.git
 cd RWA-Smart-Contract
 ```
 
@@ -159,10 +159,10 @@ SEPOLIA_RPC_URL=https://rpc.sepolia.org
 MAINNET_RPC_URL=https://eth.llamarpc.com
 
 # Private Key (Never share!)
-PRIVATE_KEY=your_private_key_here
+PRIVATE_KEY=
 
 # API Keys
-ETHERSCAN_API_KEY=your_etherscan_api_key
+ETHERSCAN_API_KEY=
 ```
 
 ## 🔨 Usage
@@ -352,16 +352,6 @@ RWA-Smart-Contract/
 5. Deploy to testnet
 6. Verify and test on testnet
 
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/AmazingFeature`
-3. Commit your changes: `git commit -m 'Add some AmazingFeature'`
-4. Push to the branch: `git push origin feature/AmazingFeature`
-5. Open a Pull Request
-
 ### Contribution Guidelines
 
 - Write comprehensive tests
@@ -375,16 +365,6 @@ Contributions are welcome! Please follow these steps:
 - Maximum batch mint size is limited to 50 to prevent gas issues
 - Auction minimum duration is 1 hour
 - Platform fees capped at 10%
-
-## 🗺️ Roadmap
-
-- [ ] Implement fractional ownership
-- [ ] Add governance token
-- [ ] Cross-chain bridge support
-- [ ] Advanced rental/leasing mechanisms
-- [ ] Integration with real estate APIs
-- [ ] Mobile app integration
-- [ ] DAO for community governance
 
 ## 📄 License
 
@@ -402,15 +382,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - 📱 Telegram: [@topsecretagent_007](https://t.me/topsecretagent_007)
 - 🐙 GitHub: [topsecretagent007](https://github.com/topsecretagent007)
-
----
-
-## 🚨 Disclaimer
-
-This smart contract is provided as-is. While we've implemented security best practices, please conduct your own security audit before deploying to mainnet. Real-world asset tokenization may have legal implications in your jurisdiction. Consult with legal professionals before use.
-
----
-
-**Built with ❤️ for the future of Real World Asset tokenization**
-
-If you find this project useful, please ⭐ star the repository!
